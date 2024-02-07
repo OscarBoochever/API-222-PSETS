@@ -3,7 +3,7 @@ title: "API 222 Problem Set 1"
 subtitle: "Machine Learning and Big Data Analytics: Spring 2024"
 output: pdf_document
 date: "Due at 11:59am on February 15 - submit on Gradescope"
-author: "Your Name"
+author: "Oscar Boochever"
 ---
 
 
