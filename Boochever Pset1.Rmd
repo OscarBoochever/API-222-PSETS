@@ -13,6 +13,9 @@ This problem set is worth 30 points in total. To get full credit, submit your co
 
 [Please fill out this brief (ungraded) survey](https://canvas.harvard.edu/courses/132784/quizzes/357796) to help Professor Saghafian and the teaching assistants get to know you. The link to the survey can also be found on Canvas under ``Quizzes".
 
+\
+\textcolor{blue}{\textit{Done}}
+
 ## Conceptual Questions (15 pts)
 
 
