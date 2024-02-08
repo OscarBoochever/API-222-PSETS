@@ -30,74 +30,75 @@ This problem set is worth 30 points in total. To get full credit, submit your co
 (a) A health organization is seeking to improve mental health services in a rural area. They want to identify individuals at high risk of developing stress-related disorders. They have demographic data and survey responses about lifestyle and stress levels. 
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{1. Classification. 2. Prediction}}
+
 
 (b) In a study exploring gender bias in job recruitment, researchers analyze, using application records and interview feedback, whether female applicants in technology roles are less likely to be called for an interview compared to male applicants.
 
-[INSERT ANSWER]
 
+\textcolor{blue}{\textit{1. Regression. 2. Inference}}
 
 
 (c) A team of researchers is investigating the impact of dietary changes on physical fitness levels among middle-aged adults. They first implement a program promoting a balanced diet and then measure the change in the participants' body mass index (BMI) over six months.
 
 
-[INSERT ANSWER]
+  \textcolor{blue}{\textit{1. Regression. 2. Prediction}}
 
-
+\
 **2. Flexible models versus inflexible models (5 pts)**
 
 (a) Flexible models will generally have lower bias than inflexible models. True or False?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{True}}
 
 
 (b) For the same very large number of observations, inflexible models will likely perform better than flexible models when the number of features is small. True or False?
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{True}}
 
 
 (c) If the underlying data generating process is linear, a flexible model will generally perform worse than an inflexible one. True or False?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{False}}
 
 
 (d) Non-parametric models impose stronger assumptions on the underlying data generating process than parametric models. True or False?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{False}}
 
 
 (e) KNN and linear regression are both parametric models, as they both have decision rules. True or False?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{False}}
 
-
+\
 **3. The bias-variance tradeoff (4 pts)**
 
 (a) What does bias refer to in the machine learning context?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{In a machine learning context, bias can be thought of as the "accuracy" of the model. On a dart board, this would mean centering on the bullseye. In more detail, it is the average difference between  predicted and actual y values across all x's.}}
 
 
 (b) What does variance refer to in the machine learning context?
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{In a machine learning context, variance can be thought of as the "consistency" of the model. On a dart board, this would mean the spread of the darts, with low variance being concentrated in one area, and high variance being spread all over. In more detail, it is the average squared difference between each individual prediction and the mean prediction across all possible training datasets. In other words, the amount by which the model would change if we estimated it using a different training set.}}
 
 
 (c) Now briefly describe the bias-variance tradeoff.
 
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{More flexible models have lower bias, as they more accurately fit the training data. However, this means that they are sensitive to that specific composition of the training data, which means that each cut of training data would produce different models -- this means it would have higher variability. This is the fundamental bias-variance tradeoff, which we aim to balance by minimizing MSE (setting first derivative equal to zero).}}
 
 
 (d) Briefly explain the issue of overfitting in light of the bias-variance trade-off.
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{Very flexible models are prone to overfitting, which would result in very low bias, but very high variance.}}
 
 
 ## Data Questions (15 pts)
@@ -111,57 +112,115 @@ For any non-integer numbers, please report your numbers to exactly two decimal p
 
 **1. Preliminary data exploration (5 pts)**
 
+```{r, message=FALSE}
+# Load data and libraries
+library(tidyverse)
+
+data <- read_csv('heartRisk.csv')
+```
+
 
 (a) How many observations and variables are in the dataset?
 
 ```{r}
-# Your code here
+dim(data)
 ```
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{1000 observations and 9 variables}}
 
 (b) Are any of the columns categorical? If so, which ones?
 
-```{r}
-# Your code here
+```{r, message=FALSE}
+sapply(data, class)
 ```
 
-[INSERT ANSWER]
+
+\textcolor{blue}{\textit{No, they are all numeric.}}
 
 
 (c) Compute the mean and standard deviation of the `Risk` score.
 
 ```{r}
-# Your code here
+data %>% 
+  summarise('Risk Mean' = round(mean(Risk), 2),
+            'SD Risk' = round(sd(Risk), 2))
 ```
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{See summary table above.}}
+
 
 For the next few questions, set the seed to 222 and randomly put 20% of your observations in a test set and the remaining observations in a training set.
 
 ```{r}
-# Your code here
+set.seed(222) #to API-222 number so random sample stays the same repeatedly
+
+all_ids <- 1:nrow(data)
+
+test_ids <- sample(all_ids, round(0.2 * nrow(data))) #ids to pull out to become the training data
+
+training_ids <- all_ids[!(all_ids %in% test_ids)]
+
+#test code to see if works equivalently
+training_ids_review_section <- which(!(1:nrow(data) %in% test_ids))
+identical(training_ids, training_ids_review_section)
+
+# Use ids to create datasets
+test_data <- data[test_ids, ]
+training_data <- data[training_ids, ]
+
 ```
 
 
 **2. When you use your training data to build a linear model that regresses `Risk` on all other features available in the data (plus an intercept), what is your test Mean Squared Error? (2 pt)**
 
 ```{r}
-# Your code here
+# Create "kitchen sink" model and view results
+risk_kitchen_sink <- lm(Risk ~ ., data = training_data)
+summary(risk_kitchen_sink)
+
+# Predict values
+names(test_data[, 9]) #confirm the variable index for next line
+
+predicted_risk_ks <- predict(risk_kitchen_sink, test_data[, -9])
+
+# Calculate test MSE
+test_mse_risk_ks <- round(mean((predicted_risk_ks - test_data$Risk)^2), 2)
+test_mse_risk_ks
+
+#Compare test MSE to training MSE
+training_mse_risk_ks <- round(mean((risk_kitchen_sink$residuals)^2), 2)
+training_mse_risk_ks / test_mse_risk_ks
 ```
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{The test MSE is 81.00.}}
+\
 
 **3. Now use your training data to build a linear model that regresses Risk on only three variables: Age, isDiabetic, and isHypertensive (include an intercept)**
 
 (a) What is your test MSE? (1 pt)
 
 ```{r}
-# Your code here
+# Create simpler model and view results
+risk_simple <- lm(Risk ~ Age + isDiabetic + isHypertensive, data = training_data)
+summary(risk_simple)
+
+# Predict values
+names(test_data[, 9]) #confirm the variable index for next line
+
+predicted_risk_simple <- predict(risk_simple, test_data[, -9])
+
+# Calculate test MSE
+test_mse_risk_simple <- round(mean((predicted_risk_simple - test_data$Risk)^2), 2)
+test_mse_risk_simple
+
+#Compare test MSE to training MSE
+training_mse_risk_simple <- round(mean((risk_simple$residuals)^2), 2)
+training_mse_risk_simple / test_mse_risk_simple
+
 ```
 
-[INSERT ANSWER]
-
+\textcolor{blue}{\textit{The test MSE is now 146.78.}}
+\
 
 (b) Create a table that shows the coefficients from both of your models. Use the `stargazer` package to do this if you are working in an RMD. (2 pt)
 
