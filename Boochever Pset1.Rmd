@@ -187,7 +187,7 @@ predicted_risk_ks <- predict(risk_kitchen_sink, test_data[, -9])
 test_mse_risk_ks <- round(mean((predicted_risk_ks - test_data$Risk)^2), 2)
 test_mse_risk_ks
 
-#Compare test MSE to training MSE
+#Compare test MSE to training MSE (optional)
 training_mse_risk_ks <- round(mean((risk_kitchen_sink$residuals)^2), 2)
 training_mse_risk_ks / test_mse_risk_ks
 ```
@@ -224,41 +224,127 @@ training_mse_risk_simple / test_mse_risk_simple
 
 (b) Create a table that shows the coefficients from both of your models. Use the `stargazer` package to do this if you are working in an RMD. (2 pt)
 
-```{r}
+```{r, message=FALSE, results=FALSE}
 # Your code here
+library(stargazer)
+#stargazer(risk_kitchen_sink, risk_simple)
 ```
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Thu, Feb 08, 2024 - 11:43:09
+\begin{table}[!htbp] \centering 
+  \caption{} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lcc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{2}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-3} 
+\\[-1.8ex] & \multicolumn{2}{c}{Risk} \\ 
+\\[-1.8ex] & (1) & (2)\\ 
+\hline \\[-1.8ex] 
+ isMale & 4.894$^{***}$ &  \\ 
+  & (0.535) &  \\ 
+  & & \\ 
+ isSmoker & 9.165$^{***}$ &  \\ 
+  & (0.536) &  \\ 
+  & & \\ 
+ isDiabetic & 10.569$^{***}$ & 10.449$^{***}$ \\ 
+  & (0.536) & (0.826) \\ 
+  & & \\ 
+ isHypertensive & 4.717$^{***}$ & 5.281$^{***}$ \\ 
+  & (0.535) & (0.825) \\ 
+  & & \\ 
+ Age & 0.920$^{***}$ & 0.878$^{***}$ \\ 
+  & (0.023) & (0.036) \\ 
+  & & \\ 
+ Systolic & 0.209$^{***}$ &  \\ 
+  & (0.009) &  \\ 
+  & & \\ 
+ Cholesterol & 0.070$^{***}$ &  \\ 
+  & (0.013) &  \\ 
+  & & \\ 
+ HDL & $-$0.094$^{***}$ &  \\ 
+  & (0.011) &  \\ 
+  & & \\ 
+ Constant & $-$85.725$^{***}$ & $-$40.725$^{***}$ \\ 
+  & (2.974) & (2.196) \\ 
+  & & \\ 
+\hline \\[-1.8ex] 
+Observations & 800 & 800 \\ 
+R$^{2}$ & 0.799 & 0.518 \\ 
+Adjusted R$^{2}$ & 0.797 & 0.517 \\ 
+Residual Std. Error & 7.539 (df = 791) & 11.635 (df = 796) \\ 
+F Statistic & 393.184$^{***}$ (df = 8; 791) & 285.600$^{***}$ (df = 3; 796) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{2}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
 
-[INSERT ANSWER]
+
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+
 
 
 (c) Provide some intuition for what it means that some of the coefficients changed  between the two regressions. (1 pt)
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{Some of the variables in the second regression are explainable by or have correlation with variables in the first regression. That variables may also have correlation with the dependent variable. In essence, there is omitted variable bias, and the coefficients in the second model either overstate or understate their true predictive power compared to when controlling for relevant additional confounders.}}
 
-    
+\
+
 **4. When you use your training data to build a KNN model that regresses Risk on all other features in the data, what is your test Mean Squared Error with $K = 2$? (1 pt)**
 
 ```{r}
-# Your code here
+library(FNN)
+knn_reg1 <- knn.reg(training_data[, -9],
+                    test_data[, -9],
+                    training_data$Risk,
+                    k = 1)
+
+mse_knn1_test <- mean((knn_reg1$pred - test_data$Risk)^2)
+mse_knn1_test
 ```
 
-[INSERT ANSWER]
-
+\textcolor{blue}{\textit{With K = 1, the test MSE is 221.36}}
+\
 
 **5. When you use your training data to build a KNN model that regresses Risk on all other features in the data, what is your test Mean Squared Error with $K = 10$? (1 pt)**
 
 ```{r}
-# Your code here
+knn_reg10 <- knn.reg(training_data[, -9],
+                     test_data[,-9],
+                     training_data$Risk,
+                     k = 10)
+
+mse_knn10_test <- mean((knn_reg10$pred - test_data$Risk)^2)
+mse_knn10_test
 ```
 
-[INSERT ANSWER]
-
+\textcolor{blue}{\textit{With K = 10, the MSE is 126.54.}}
+\
 
 **6. Between the standard linear regression and the KNN regression, which performed better? (1 pt)**
 
-[INSERT ANSWER]
-
+\textcolor{blue}{\textit{The longer "kitchen sink" linear regression performed better with a lower MSE than the either the better performing KNN(10) model. }}
+\
 
 **7. From an inference standpoint, which of these models would we rather use? (1 pt)**
 
-[INSERT ANSWER]
+\textcolor{blue}{\textit{From an inference standpoint, we would rather use the linear model, as the coefficients are more interpretable. For example, we know the difference in Risk that being male versus female poses, holding all the other variables in our model constant. This has greater interpretability, and can lead to policy relevant actions. }}
+\
