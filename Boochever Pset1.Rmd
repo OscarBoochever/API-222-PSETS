@@ -42,7 +42,7 @@ This problem set is worth 30 points in total. To get full credit, submit your co
 (c) A team of researchers is investigating the impact of dietary changes on physical fitness levels among middle-aged adults. They first implement a program promoting a balanced diet and then measure the change in the participants' body mass index (BMI) over six months.
 
 
-  \textcolor{blue}{\textit{1. Regression. 2. Prediction}}
+  \textcolor{blue}{\textit{1. Regression. 2. Inference}}
 
 \
 **2. Flexible models versus inflexible models (5 pts)**
@@ -61,7 +61,7 @@ This problem set is worth 30 points in total. To get full credit, submit your co
 (c) If the underlying data generating process is linear, a flexible model will generally perform worse than an inflexible one. True or False?
 
 
-\textcolor{blue}{\textit{False}}
+\textcolor{blue}{\textit{True}}
 
 
 (d) Non-parametric models impose stronger assumptions on the underlying data generating process than parametric models. True or False?
@@ -81,7 +81,7 @@ This problem set is worth 30 points in total. To get full credit, submit your co
 (a) What does bias refer to in the machine learning context?
 
 
-\textcolor{blue}{\textit{In a machine learning context, bias can be thought of as the "accuracy" of the model. On a dart board, this would mean centering on the bullseye. In more detail, it is the average difference between  predicted and actual y values across all x's.}}
+\textcolor{blue}{\textit{In a machine learning context, bias can be thought of as the "accuracy" of the model. On a dart board, this would mean centering on the bullseye. In more detail, it is the average difference between predicted and actual y values across all x's.}}
 
 
 (b) What does variance refer to in the machine learning context?
@@ -304,7 +304,7 @@ F Statistic & 393.184$^{***}$ (df = 8; 791) & 285.600$^{***}$ (df = 3; 796) \\
 
 (c) Provide some intuition for what it means that some of the coefficients changed  between the two regressions. (1 pt)
 
-\textcolor{blue}{\textit{Some of the variables in the second regression are explainable by or have correlation with variables in the first regression. That variables may also have correlation with the dependent variable. In essence, there is omitted variable bias, and the coefficients in the second model either overstate or understate their true predictive power compared to when controlling for relevant additional confounders.}}
+\textcolor{blue}{\textit{Some of the variables in the second (short) regression are explainable by or have correlation with variables in the first (longer) regression. Those variables in the long regression but not the short may also have correlation with the dependent variable. In essence, there is omitted variable bias for the independent variables in the short regression, and the coefficients either overstate or understate their true explanatory power compared to when controlling for relevant additional confounders.}}
 
 \
 
@@ -341,7 +341,7 @@ mse_knn10_test
 
 **6. Between the standard linear regression and the KNN regression, which performed better? (1 pt)**
 
-\textcolor{blue}{\textit{The longer "kitchen sink" linear regression performed better with a lower MSE than the either the better performing KNN(10) model. }}
+\textcolor{blue}{\textit{The longer "kitchen sink" linear regression performed best with a lower MSE (81.00) than the best performing KNN(10) model (126.54). }}
 \
 
 **7. From an inference standpoint, which of these models would we rather use? (1 pt)**
