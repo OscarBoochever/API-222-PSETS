@@ -83,10 +83,29 @@ print(euc_data[, c("X1", "X2", "X3", "Y", "distance_from_test")])
 
 (a) Interpret \(\hat{\beta}_2\). (1 pt)
 
-
-
+\textcolor{blue}{\textit{B2 = 1.2 means that for men with a family history of prostate cancer, the log-odds of developing prostate cancer are 1.2 units higher relative to those without a family history, on average, holding age and smoking status equal.}}
 
 (b) Estimate the probability that a 60-year-old man with a family history of prostate cancer who is a smoker develops prostate cancer. (2 pts)
+
+$$Y = -3.5 + 0.06Age + 1.2FamilyHistory + 0.8Smoker$$
+
+
+```{r}
+age <- 60
+family_history <- 1  
+smoking_status <- 1 
+
+# Model
+y <- -3.5 + 0.06 * age + 1.2 * family_history + 0.8 * smoking_status
+
+# Exponentiate
+probability <- exp(y) / (1 + exp(y))
+
+probability
+
+```
+
+\textcolor{blue}{\textit{The probability that a 60yr old man with a history of prostate cancer who smokes develops cancer is 89.10\%}}
 
 
 4. k-fold cross-validation
