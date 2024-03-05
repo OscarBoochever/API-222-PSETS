@@ -215,15 +215,73 @@ round(lambda_1se, 3)
 
 5. Now consider the same prediction problem. Implement your own 5-fold cross-validation routine for KNN for $K = 1, ..., 50$ (write the cross-validation routine yourself rather than using a canned package). Include the snippet of code you wrote here. It should not exceed 20 lines. (6pts)
 
+```{r}
+# Function to perform cross-validation for KNN
+cross_validation_KNN <- function(data_x, data_y, k_seq, kfolds) {
+    
+    # Initialize matrix to store CV errors
+    CV_error_mtx <- matrix(0, nrow = length(k_seq), ncol = kfolds)
+    
+    # Assign fold IDs
+    fold_ids <- rep(seq(kfolds), ceiling(nrow(data_x) / kfolds))
+    fold_ids <- fold_ids[1:nrow(data_x)]
+    fold_ids <- sample(fold_ids, length(fold_ids))  # Shuffle fold IDs
+    
+    # Cross-validation loop
+    for (k in k_seq) {
+        for (fold in 1:kfolds) {
+            # Train the KNN model
+            knn_fold_model <- knn(train = scale(data_x[which(fold_ids != fold),]),
+                                  test = scale(data_x[which(fold_ids == fold),]),
+                                  cl = data_y[which(fold_ids != fold)],
+                                  k = k)
+            # Measure and save error rate
+            CV_error_mtx[k, fold] <- mean(knn_fold_model != data_y[which(fold_ids == fold)])
+        }
+    }
+    
+    # Return the matrix of CV errors
+    return(CV_error_mtx)
+}
+```
+
 
 (a) Plot of mean cross-validation MSE as a function of $k$. 
 
+```{r}
+# Applying the function
+set.seed(222)
+k_seq <- 1:50  # Values of k to test
+kfolds <- 5     # Number of folds
+cv_error_mtx <- cross_validation_KNN(data_x = continuous_data[, -10],
+                                     data_y = continuous_data$lengthofstay,
+                                     k_seq = k_seq,
+                                     kfolds = kfolds)
+
+# Calculate mean CV error for each value of k
+mean_cv_error <- rowMeans(cv_error_mtx)
+
+# Plot mean CV error as a function of k
+plot(k_seq, mean_cv_error, type = "l",
+     main = "Mean CV Error Rate as a Function of k",
+     ylab = "Mean CV Error", xlab = "k")
+```
 
 
 (b) The best k according to CV is
 
+```{r}
+# Find the best k according to CV
+best_k <- k_seq[which.min(mean_cv_error)]
+best_k
+```
 
 
 (c) The cross-validation error for the best k is
 
+```{r}
+# Find the cross-validation error for the best k
+cv_error_best_k <- min(mean_cv_error)
+cv_error_best_k %>% round(3)
+```
 
