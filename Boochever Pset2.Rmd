@@ -75,7 +75,7 @@ print(euc_data[, c("X1", "X2", "X3", "Y", "distance_from_test")])
 
 (b) What is your prediction with K = 2? Why? (1pt)
 
-\textcolor{blue}{\textit{Your prediction is Y = 2.5 because the two nearest neighbors (lowest distance values: ~3.5 and ~2.7} have Y values of 4 and 1 respectively. Thus, the average of these numbers is 2.5.}
+\textcolor{blue}{\textit{Your prediction is Y = 2.5 because the two nearest neighbors (lowest distance values: roughly 3.5 and 2.7) have Y values of 4 and 1 respectively. The average of these numbers is 2.5.}}
 
 (c) If the Bayes decision boundary in this problem is highly nonlinear, then would we expect the best value for K to be large or small? Why? (1pt)
 
