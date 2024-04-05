@@ -91,21 +91,44 @@ The remaining columns report the features extracted from a specific task. The ta
 
 ```{r}
 # Load the data
-# handwriting <- read.csv("DARWIN.csv")
+handwriting <- read.csv("data/DARWIN.csv")
 ```
 
 ### 1. Data preparation (3pts)
 
 (a) Remove the columns that contain the participant's identifier and convert `class` to a factor type. (1 pt)
 
+```{r}
+# Remove the columns that contain the participant's identifier
+handwriting <- handwriting[, -1]
+
+# Convert 'class' to a factor type
+handwriting$class <- as.factor(handwriting$class)
+```
 
 
 (b) Using the random seed 222, split the data (70/30) into a training set and a test set. (1 pt)
 
+```{r}
+set.seed(222)
+train_indices <- sample(seq(nrow(handwriting)), round(0.7 * nrow(handwriting)))
+train_data <- handwriting[train_indices, ]
+test_data <- handwriting[-train_indices, ]
+```
 
 
 (c) How many observations are in the training data set? How many observations are in the test data set? (1 pt)
 
+```{r}
+# Number of observations in the training data set
+train_obs <- nrow(train_data)
+
+# Number of observations in the test data set
+test_obs <- nrow(test_data)
+
+train_obs
+test_obs
+```
 
 
 
@@ -119,19 +142,53 @@ For the next set of questions, we will consider the prediction problem of classi
 # Run a decision tree
 library(tree)
 
+# Fit a decision tree model
+tree_model <- tree(class ~ ., data = train_data)
+
+# Perform cross-validation to choose the optimal size
+cv_tree <- cv.tree(tree_model, FUN = prune.misclass, K = 10)
+
 ```
 
 
 (b) Show a plot of the deviance compared to the size. (2 pts)
 
+```{r}
+# Plot deviance against size
+plot(cv_tree$size, cv_tree$dev, type = "b", 
+     xlab = "Size", ylab = "Deviance",
+     main = "Deviance vs. Size for Decision Tree")
+```
 
 
 (c) What is the optimal size? (1 pts)
 
+```{r}
+# Find the optimal size
+optimal_size <- cv_tree$size[which.min(cv_tree$dev)]
+optimal_size
+```
+
+\textcolor{blue}{\textit{We also see this visually with a minimum at 2.}}
 
 
 (d) What is the misclassification error rate on the test set? Show this both for the original tree and for the pruned tree using the optimal size. (2 pts)
 
+```{r}
+# Original tree misclassification error rate
+tree_pred_orig <- predict(tree_model, newdata = test_data, type = "class")
+error_rate_orig <- mean(tree_pred_orig != test_data$class)
+
+# Pruned tree misclassification error rate
+pruned_tree <- prune.misclass(tree_model, best = optimal_size)
+tree_pred_pruned <- predict(pruned_tree, newdata = test_data, type = "class")
+error_rate_pruned <- mean(tree_pred_pruned != test_data$class)
+
+error_rate_orig
+error_rate_pruned
+```
+
+\textcolor{blue}{\textit{The misclassification error rate for the original tree is 0.25, while for the pruned tree with the optimal size, it is 0.192.}}
 
 
 ### 3. Random forest (5 pts)
@@ -143,18 +200,45 @@ library(tree)
 # Run a random forest
 library(randomForest)
 
+# Fit a random forest model
+rf_model <- randomForest(class ~ ., data = train_data, ntree = 5000)
 ```
 
 (b) What is your test misclassification error? (2 pts)
 
+```{r}
+# Predict using the random forest model
+rf_pred <- predict(rf_model, newdata = test_data)
 
+# Calculate the misclassification error
+error_rate_rf <- mean(rf_pred != test_data$class)
+error_rate_rf
+```
+
+\textcolor{blue}{\textit{The test misclassification error for the random forest model is 0.154.}}
 
 (c) What are the three most important variables in the random forest? (2 pts)
 
+```{r}
+# Extract variable importance
+importance_rf <- importance(rf_model)
+
+# Get the names of the top three most important variables
+top_three_names <- rownames(importance_rf)[order(importance_rf, decreasing = TRUE)][1:3]
+top_three_names
+```
+
+\textcolor{blue}{\textit{The three most important variables in the random forest model are: "total\_time23", "air\_time23", and "paper\_time23".}}
 
 ### 4. Boosting (4 pts)
 
 (a) Recode the class variable so that it is 0 for healthy people and 1 for patients. (1 pt)
+
+```{r}
+# Recode the class variable
+train_data$class <- ifelse(train_data$class == "P", 1, 0)
+test_data$class <- ifelse(test_data$class == "P", 1, 0)
+```
 
 
 (b) Run a boosting model with 5000 trees and interaction depth of 4 using the training data. Hint: make sure you specify in your model that the distribution is "bernoulli". (1 pt)
@@ -163,22 +247,56 @@ library(randomForest)
 # Run a boosting model
 library(gbm)
 
+# Fit a boosting model
+boost_model <- gbm(class ~ ., data = train_data, distribution = "bernoulli",
+                    n.trees = 5000, interaction.depth = 4)
 ```
 
 (c) What is your test misclassification error? Hint: You will need to determine a threshold for which you decide a predicted value to be 1 (ALZ) or 0 (Healthy). Use 0 as this threshold. (2 pts)
 
+```{r}
+# Predict using the boosting model
+boost_pred <- predict(boost_model, newdata = test_data, n.trees = 5000, type = "response")
 
+#Set Threshold
+threshold <- 0 
+
+# Convert predicted probabilities to predicted classes using threshold of 0
+boost_pred_class <- ifelse(boost_pred > threshold, 1, 0)
+
+# Calculate misclassification error
+error_rate_boost <- mean(boost_pred_class != test_data$class)
+error_rate_boost
+```
+
+\textcolor{blue}{\textit{The test misclassification error for the boosting model is 0.558.}}
 
 ### 5. Which model would you choose to predict Alzheimer’s disease? Why? (1 pt)
 
-
-
+\textcolor{blue}{\textit{I would choose the random forest model due to its superior performance with the lowest test misclassification error rate of 0.154. However, if interpretability is a priority, especially for discussing with patients, the pruned decision tree would be a valuable option despite its slightly higher error rate of 0.192.}}
 
 ### 6. Fun extra question (0 pt)
 
 (a) Try running the threshold analysis for the boosting model to determine a better threshold than 0 to minimize misclassification error? (0 pts)
 
+```{r}
+# Threshold analysis for boosting model
+thresholds <- seq(0, 1, by = 0.01)
+error_rates <- numeric(length(thresholds))
 
+for (i in seq_along(thresholds)) {
+  boost_pred_class <- ifelse(boost_pred > thresholds[i], 1, 0)
+  error_rates[i] <- mean(boost_pred_class != test_data$class)
+}
+
+# Find the threshold with the lowest misclassification error
+best_threshold <- thresholds[which.min(error_rates)]
+best_threshold
+
+boost_pred_class <- ifelse(boost_pred > best_threshold, 1, 0)
+error_rate_best_threshold <- mean(boost_pred_class != test_data$class)
+error_rate_best_threshold
+```
 
 
 
