@@ -1,0 +1,184 @@
+---
+title: "API 222 Problem Set 3"
+subtitle: "Machine Learning and Big Data Analytics: Spring 2024"
+author: "Oscar Boochever"
+output: pdf_document
+---
+
+```{r, include=FALSE, message=FALSE, warning=FALSE}
+# The needed libraries
+library(tidyverse)
+library(stargazer)
+library(FNN)
+library(kableExtra)
+library(glmnet)
+
+# Ask R to not present numbers using scientific notation
+options(scipen = 999)
+```
+
+This problem set is worth 30 points in total. To get full credit, submit your code along with a write-up of your answers. This should either be done in R Markdown or Jupyter Notebook, submitted in one knitted PDF.
+
+## Conceptual Questions (11 pts)
+
+### 1. Dimension Reduction (4 pts)
+
+(a) What is the reason to scale (standardize) your variables when performing dimension
+reduction? (1 pt)
+
+\textcolor{blue}{\textit{The reason to scale/standardize variables when performing dimension reduction is to ensure that all variables have the same scale, allowing them to be compared on an equivalent scale and contribute equally to the analysis.}}
+
+(b) You want to run a Principal Components Regression (PCR). Let’s denote two of your features X1 and X2. The correlation between X1 and the outcome variable Y is 0 and the correlation between X2 and Y is 0.9. Which of the two variables will receive more weight in the the first factor loading of PCR regression? Briefly explain. (1 pt)
+
+\textcolor{blue}{\textit{In PCR, the first factor loading corresponds to the linear combination of variables that explains the most variance in the data. Since the correlation between X2 and the outcome variable Y is 0.9, X2 will receive more weight in the first factor loading compared to X1, which has no correlation with Y. Variables with higher correlations with the outcome variable tend to contribute more to the principal components.}}
+
+(c) You want to run a Partial Least Squares (PLS) regression. Let’s denote two of your features X1 and X2. The correlation between X1 and the outcome variable Y is 0 and the correlation between X2 and Y is 0.9. Which of the two variables will receive more weight in the the first factor loading of PLS regression? Briefly explain. (1 pt)
+
+\textcolor{blue}{\textit{In Partial Least Squares (PLS) regression, variables are weighted based on their covariance with both the predictors and the outcome variable. Since the correlation between X2 and Y is 0.9, X2 will receive more weight in the first factor loading compared to X1, which has no correlation with Y.}}
+
+(d) Is PCR a feature selection method? Why or why not? (1 pt)
+
+\textcolor{blue}{\textit{No, PCR is not a feature selection method. It's a dimension reduction technique that creates new variables (principal components) as linear combinations of the original features. These components capture the most variance in the data, but they may not necessarily correspond directly to the original features (like the Arizona-NY crime example). PCR does not select specific features but rather transforms the original feature space into a smaller set of variables.}}
+
+### 2. Shrinkage (3 pts)
+
+(a) What is the reason to scale (standardize) your variables when performing shrinkage methods? (1 pt)
+
+\textcolor{blue}{\textit{Scaling variables in shrinkage methods ensures balance by preventing those with larger scales or magnitudes from dominating the regularization process. This helps in avoiding biased coefficient estimates and ensures each variable contributes equally to the penalty term.}}
+
+(b) What are the trade-offs between using LASSO versus Ordinary Least Squares (OLS) in terms of bias and variance? (1 pt)
+
+\textcolor{blue}{\textit{LASSO tends to introduce more bias but lower variance compared to OLS. This means that LASSO may sacrifice some accuracy in prediction (higher bias) but can provide better generalization to new data (lower variance) by shrinking coefficients toward zero.}}
+
+
+(c) What is the main advantage of LASSO over Ridge? (1 pt)
+
+\textcolor{blue}{\textit{The main advantage of LASSO is its ability to perform feature selection by setting some coefficients exactly to zero. Effectively reducing the number of features with LASSO makes it particularly useful when dealing with high-dimensional datasets with many irrelevant features, also increasing interpretability. In contrast, Ridge regression tends to shrink coefficients towards zero without necessarily making them exactly zero, thus retaining all features in the model.}}
+
+
+### 3. Tree-based Methods (4 pts)
+
+
+(a) In 2-3 sentences, explain the idea of tree pruning and its importance in terms of the
+bias-variance trade-off. (1 pt)
+
+\textcolor{blue}{\textit{Tree pruning involves removing unnecessary parts of a decision tree to simplify its structure and improve interpretability. This process is essential for managing the bias-variance trade-off: by reducing the complexity of the tree, we decrease the model's variance (reducing risk of overfitting), while accepting a slightly higher bias. This balance ensures that the model generalizes well to new data while still capturing important patterns, enhancing both interpretability and performance.}}
+
+(b) Under what conditions might we expect a tree-based classifier to outperform a linear classifier such as LDA?(1 pt)
+
+\textcolor{blue}{\textit{A tree-based classifier may outperform LDA when the relationship between features and the outcomes is highly non-linear or when the decision boundary is complex.}}
+
+(c) Briefly explain how Bagging can lead to both low variance and low bias compared to decision trees. (1 pt)
+
+\textcolor{blue}{\textit{(c) Bagging reduces variance by averaging predictions from multiple trees trained on bootstrapped samples of the data. This ensemble approach also helps to mitigate bias by combining the predictions of multiple models, each trained on slightly different subsets of the data. As a result, Bagging tends to produce more stable and robust predictions with lower variance and bias compared to individual decision trees.}}
+
+(d) Briefly explain how Random Forests results in lower variance compared to Bagging. (1 pt)
+
+\textcolor{blue}{\textit{(d) Random Forests reduce variance compared to Bagging by introducing an additional layer of randomness during the tree-building process. In a Random Forest, each tree is trained on a random subset of features, which reduces the correlation between individual trees and promotes diversity in the ensemble. This diversity further reduces the overall variance of the model, leading to more robust and stable predictions.}}
+
+\newpage
+
+## Data Questions (19 pts)
+
+The DARWIN dataset contains handwriting data collected and is composed of 25 handwriting tasks. The protocol was specifically designed for the early detection of Alzheimer’s disease (AD). The dataset includes data from 174 participants (89 AD patients and 85 healthy people).
+
+The file “DARWIN.csv” contains the acquired data. The file consists of one row for each participant plus an additional header row. The first row is the header row, the next 89 rows collect patients data, whereas the remaining 84 rows collect information from healthy people.
+
+The file consists of 452 columns. The first column shows participants' identifiers, whereas the last column shows the class to which each participant belongs. This value can be equal to 'P' (Patient) or 'H' (Healthy).
+
+The remaining columns report the features extracted from a specific task. The tasks performed are 25, and for each task 18 features have been extracted. The column will be identified by the name of the features followed by a numeric identifier representing the task the feature is extracted. E.g., the column with the header "total_time8" collects the values for the "total time" feature extracted from task #8.
+
+
+```{r}
+# Load the data
+# handwriting <- read.csv("DARWIN.csv")
+```
+
+### 1. Data preparation (3pts)
+
+(a) Remove the columns that contain the participant's identifier and convert `class` to a factor type. (1 pt)
+
+
+
+(b) Using the random seed 222, split the data (70/30) into a training set and a test set. (1 pt)
+
+
+
+(c) How many observations are in the training data set? How many observations are in the test data set? (1 pt)
+
+
+
+
+For the next set of questions, we will consider the prediction problem of classifying Alzheimer’s disease patients from healthy people. 
+
+### 2. Decision tree (6 pts)
+
+(a) Run a decision tree on your training data and use cross-validation to choose the optimal size. For your cross-validation use $k=10$ and `prune.misclass` as the `FUN` argument. Hint: if you are not sure how to do this read the help file for `?cv.tree`. (1 pt)
+
+```{r}
+# Run a decision tree
+library(tree)
+
+```
+
+
+(b) Show a plot of the deviance compared to the size. (2 pts)
+
+
+
+(c) What is the optimal size? (1 pts)
+
+
+
+(d) What is the misclassification error rate on the test set? Show this both for the original tree and for the pruned tree using the optimal size. (2 pts)
+
+
+
+### 3. Random forest (5 pts)
+
+(a) Run a random forest with 5000 trees using the training data. (1 pt) 
+
+
+```{r, message=FALSE}
+# Run a random forest
+library(randomForest)
+
+```
+
+(b) What is your test misclassification error? (2 pts)
+
+
+
+(c) What are the three most important variables in the random forest? (2 pts)
+
+
+### 4. Boosting (4 pts)
+
+(a) Recode the class variable so that it is 0 for healthy people and 1 for patients. (1 pt)
+
+
+(b) Run a boosting model with 5000 trees and interaction depth of 4 using the training data. Hint: make sure you specify in your model that the distribution is "bernoulli". (1 pt)
+
+```{r}
+# Run a boosting model
+library(gbm)
+
+```
+
+(c) What is your test misclassification error? Hint: You will need to determine a threshold for which you decide a predicted value to be 1 (ALZ) or 0 (Healthy). Use 0 as this threshold. (2 pts)
+
+
+
+### 5. Which model would you choose to predict Alzheimer’s disease? Why? (1 pt)
+
+
+
+
+### 6. Fun extra question (0 pt)
+
+(a) Try running the threshold analysis for the boosting model to determine a better threshold than 0 to minimize misclassification error? (0 pts)
+
+
+
+
+
