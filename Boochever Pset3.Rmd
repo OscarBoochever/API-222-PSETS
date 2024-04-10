@@ -259,7 +259,7 @@ boost_model <- gbm(class ~ ., data = train_data, distribution = "bernoulli",
 boost_pred <- predict(boost_model, newdata = test_data, n.trees = 5000, type = "response")
 
 #Set Threshold
-threshold <- 0 
+threshold <- 0.5 
 
 # Convert predicted probabilities to predicted classes using threshold of 0
 boost_pred_class <- ifelse(boost_pred > threshold, 1, 0)
